@@ -3,6 +3,10 @@ using System.Data;
 
 namespace PaseDeListaAlumnos
 {
+    /*
+     PROYECTO CORREGIDO
+     N4V4
+     */
     public partial class Form1 : Form
     {
         Conexion conexion = new Conexion();
