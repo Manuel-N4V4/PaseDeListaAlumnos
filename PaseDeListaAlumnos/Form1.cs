@@ -44,6 +44,23 @@ namespace PaseDeListaAlumnos
             }
             else
             {
+                string fecha = DateTime.Now.ToString("yyyy-MM-dd");
+
+                DataSet existe = conexion.ejecutar(
+                    $"SELECT * FROM asistencia WHERE no_control = '{txtNumControl.Text}' AND fecha = '{fecha}'"
+                );
+
+                if (existe != null && existe.Tables[0].Rows.Count > 0)
+                {
+                    MessageBox.Show("Este alumno ya tiene asistencia registrada hoy");
+
+                    txtNumControl.Clear();
+                    txtNumControl.Focus();
+                    return;
+                }
+
+
+
                 // Utilizamos MySqlCommand para mandar instruccion de insertado a la base de datos, en la funcion ejecutarComando() de la clase Conexion se asigna la conexion al comando y se ejecuta
                 MySqlCommand cmd = new MySqlCommand(
                     "INSERT INTO asistencia (no_control, fecha, hora, estado) VALUES (@no_control, @fecha, @hora, @estado)"
@@ -167,7 +184,7 @@ namespace PaseDeListaAlumnos
 
         private void Form1_Activated(object sender, EventArgs e)
         {
-
+            txtNumControl.Focus();
         }
 
         private void btnEliminar_Click(object sender, EventArgs e)
@@ -272,6 +289,7 @@ namespace PaseDeListaAlumnos
 
         private void rbAsistencia_CheckedChanged(object sender, EventArgs e)
         {
+            DateTime tiempo = DateTime.Now;
 
             if (rbAsistencia.Checked)
             {
@@ -320,6 +338,7 @@ namespace PaseDeListaAlumnos
             {
                 dgvListaAlumnos.DataSource = ds.Tables[0];
             }
+            txtNumControl.Focus();
         }
 
         private void txtNumControl_KeyDown(object sender, KeyEventArgs e)

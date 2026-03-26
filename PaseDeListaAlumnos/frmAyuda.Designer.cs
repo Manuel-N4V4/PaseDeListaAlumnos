@@ -131,7 +131,7 @@
             btnEditar.BackColor = Color.White;
             btnEditar.Font = new Font("Segoe UI Historic", 9F, FontStyle.Bold);
             btnEditar.ForeColor = Color.Coral;
-            btnEditar.Location = new Point(134, 12);
+            btnEditar.Location = new Point(81, 30);
             btnEditar.Name = "btnEditar";
             btnEditar.Size = new Size(83, 29);
             btnEditar.TabIndex = 24;
@@ -223,7 +223,7 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(88, 44);
+            label5.Location = new Point(34, 74);
             label5.Name = "label5";
             label5.Size = new Size(177, 120);
             label5.TabIndex = 31;
