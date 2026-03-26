@@ -46,9 +46,18 @@ namespace PaseDeListaAlumnos
             if (update == false)
             {
                 bool resultado = conexion.ejecutarComando($"INSERT INTO alumnos (no_control, nombre, carrera) VALUES ('{txtNoControl.Text}', '{txtNombre.Text}', '{cbCarrera.Text}')");
+
                 if (resultado == true)
                 {
-                    MessageBox.Show("Alumno registrado correctamente");
+                    string fechaHoy = DateTime.Now.ToString("yyyy-MM-dd");
+                    string horaHoy = DateTime.Now.ToString("HH:mm:ss");
+                    string queryAsistencia = $"INSERT INTO asistencia (no_control, fecha, hora, estado) " +
+                                             $"VALUES ('{txtNoControl.Text}', '{fechaHoy}', '{horaHoy}', 'Falta')";
+
+                    conexion.ejecutarComando(queryAsistencia);
+
+                    MessageBox.Show("Alumno registrado. Aparecerá como 'Falta' hasta que escanee su entrada.");
+
                     txtNoControl.Clear();
                     txtNombre.Clear();
                     cbCarrera.SelectedIndex = -1;
@@ -61,6 +70,7 @@ namespace PaseDeListaAlumnos
             else
             {
                 bool resultado = conexion.ejecutarComando($"UPDATE alumnos SET no_control = '{txtNoControl.Text}', nombre = '{txtNombre.Text}', carrera = '{cbCarrera.Text}' WHERE id = {id}");
+
                 if (resultado == true)
                 {
                     MessageBox.Show("Alumno actualizado correctamente");
@@ -69,7 +79,6 @@ namespace PaseDeListaAlumnos
                 else
                 {
                     MessageBox.Show("Error al actualizar alumno");
-
                 }
             }
         }

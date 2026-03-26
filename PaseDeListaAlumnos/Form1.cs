@@ -44,29 +44,56 @@ namespace PaseDeListaAlumnos
             }
             else
             {
-                string fecha = DateTime.Now.ToString("yyyy-MM-dd");
+                DateTime ahora = DateTime.Now;
 
+                // Buscamos si el alumno ya está en la lista de hoy usando tu objeto .Date
                 DataSet existe = conexion.ejecutar(
-                    $"SELECT * FROM asistencia WHERE no_control = '{txtNumControl.Text}' AND fecha = '{fecha}'"
+                    $"SELECT * FROM asistencia WHERE no_control = '{txtNumControl.Text}' AND fecha = '{ahora.Date.ToString("yyyy-MM-dd")}'"
                 );
 
+                // --- CASO 1: SI YA EXISTE EN LA LISTA, ACTUALIZAMOS ---
                 if (existe != null && existe.Tables[0].Rows.Count > 0)
                 {
-                    MessageBox.Show("Este alumno ya tiene asistencia registrada hoy");
+                    // Usamos MySqlCommand para el UPDATE y así usar .Date y .TimeOfDay sin textos raros
+                    MySqlCommand cmdUpdate = new MySqlCommand(
+                        "UPDATE asistencia SET estado = @estado, fecha = @fecha, hora = @hora WHERE no_control = @no_control AND fecha = @fecha_filtro"
+                    );
 
-                    txtNumControl.Clear();
-                    txtNumControl.Focus();
+                    cmdUpdate.Parameters.AddWithValue("@no_control", txtNumControl.Text);
+                    cmdUpdate.Parameters.AddWithValue("@fecha", ahora.Date); // Tu .Date exacto
+                    cmdUpdate.Parameters.AddWithValue("@hora", ahora.TimeOfDay); // Tu .TimeOfDay exacto
+                    cmdUpdate.Parameters.AddWithValue("@fecha_filtro", ahora.Date);
+
+                    if (comboBox1.Text == "")
+                    {
+                        cmdUpdate.Parameters.AddWithValue("@estado", "Asistencia");
+                    }
+                    else
+                    {
+                        cmdUpdate.Parameters.AddWithValue("@estado", comboBox1.Text);
+                    }
+
+                    bool actualizado = conexion.ejecutarComando(cmdUpdate);
+
+                    if (actualizado == true)
+                    {
+                        MessageBox.Show("Asistencia ACTUALIZADA correctamente");
+                        txtNumControl.Clear();
+                        comboBox1.SelectedIndex = -1;
+                        txtNumControl.Focus();
+                    }
+
+                    // Actualizamos la tabla visual y salimos para no hacer el insert
+                    dgvListaAlumnos.DataSource = conexion.ejecutar("SELECT * FROM asistencia WHERE fecha = CURDATE()").Tables[0];
                     return;
                 }
 
 
-
+                // --- CASO 2: SI NO EXISTE EN LA LISTA, INSERTAMOS (Tu código original) ---
                 // Utilizamos MySqlCommand para mandar instruccion de insertado a la base de datos, en la funcion ejecutarComando() de la clase Conexion se asigna la conexion al comando y se ejecuta
                 MySqlCommand cmd = new MySqlCommand(
                     "INSERT INTO asistencia (no_control, fecha, hora, estado) VALUES (@no_control, @fecha, @hora, @estado)"
                 );
-
-                DateTime ahora = DateTime.Now;
 
                 if (comboBox1.Text == "")
                 {
@@ -91,7 +118,6 @@ namespace PaseDeListaAlumnos
                 {
                     MessageBox.Show("Asistencia registrada correctamente");
 
-                    // Limpiar controles
                     txtNumControl.Clear();
                     comboBox1.SelectedIndex = -1;
                     txtNumControl.Focus();
@@ -101,8 +127,76 @@ namespace PaseDeListaAlumnos
                     MessageBox.Show("Error al registrar la asistencia");
                 }
             }
-            DataSet ds = conexion.ejecutar("SELECT * FROM asistencia");
+
+            DataSet ds = conexion.ejecutar("SELECT * FROM asistencia WHERE fecha = CURDATE()");
             dgvListaAlumnos.DataSource = ds.Tables[0];
+
+
+            //if (txtNumControl.Text == "")
+            //{
+            //    MessageBox.Show("El campo de Núm. de control debe contener información", "Sistema", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //}
+            //else
+            //{
+            //    string fecha = DateTime.Now.ToString("yyyy-MM-dd");
+
+            //    DataSet existe = conexion.ejecutar(
+            //        $"SELECT * FROM asistencia WHERE no_control = '{txtNumControl.Text}' AND fecha = '{fecha}'"
+            //    );
+
+            //    if (existe != null && existe.Tables[0].Rows.Count > 0)
+            //    {
+            //        MessageBox.Show("Este alumno ya tiene asistencia registrada hoy");
+
+            //        txtNumControl.Clear();
+            //        txtNumControl.Focus();
+            //        return;
+            //    }
+
+
+
+            //    // Utilizamos MySqlCommand para mandar instruccion de insertado a la base de datos, en la funcion ejecutarComando() de la clase Conexion se asigna la conexion al comando y se ejecuta
+            //    MySqlCommand cmd = new MySqlCommand(
+            //        "INSERT INTO asistencia (no_control, fecha, hora, estado) VALUES (@no_control, @fecha, @hora, @estado)"
+            //    );
+
+            //    DateTime ahora = DateTime.Now;
+
+            //    if (comboBox1.Text == "")
+            //    {
+            //        // Comandos parametrizados para evitar inyeccion sql    
+            //        cmd.Parameters.AddWithValue("@no_control", txtNumControl.Text);
+            //        cmd.Parameters.AddWithValue("@fecha", ahora.Date); // Obtenemos la fecha con .Date para eliminar la parte de la hora
+            //        cmd.Parameters.AddWithValue("@hora", ahora.TimeOfDay); // Obtenemos solo la parte de la hora con .TimeOfDay
+            //        cmd.Parameters.AddWithValue("@estado", "Asistencia");
+            //    }
+            //    else
+            //    {
+            //        // Comandos parametrizados para evitar inyeccion sql    
+            //        cmd.Parameters.AddWithValue("@no_control", txtNumControl.Text);
+            //        cmd.Parameters.AddWithValue("@fecha", ahora.Date); // Obtenemos la fecha con .Date para eliminar la parte de la hora
+            //        cmd.Parameters.AddWithValue("@hora", ahora.TimeOfDay); // Obtenemos solo la parte de la hora con .TimeOfDay
+            //        cmd.Parameters.AddWithValue("@estado", comboBox1.Text);
+            //    }
+
+            //    bool resultado = conexion.ejecutarComando(cmd);
+
+            //    if (resultado == true)
+            //    {
+            //        MessageBox.Show("Asistencia registrada correctamente");
+
+            //        // Limpiar controles
+            //        txtNumControl.Clear();
+            //        comboBox1.SelectedIndex = -1;
+            //        txtNumControl.Focus();
+            //    }
+            //    else
+            //    {
+            //        MessageBox.Show("Error al registrar la asistencia");
+            //    }
+            //}
+            //DataSet ds = conexion.ejecutar("SELECT * FROM asistencia");
+            //dgvListaAlumnos.DataSource = ds.Tables[0];
 
         }
 
@@ -160,7 +254,11 @@ namespace PaseDeListaAlumnos
                 }
                 else
                 {
-                    bool resultado = conexion.ejecutarComando($"UPDATE asistencia SET estado = '{comboBox1.Text}' WHERE no_control = '{txtNumControl.Text}'");
+                    string fechaHoy = DateTime.Now.ToString("yyyy-MM-dd");
+                    string horaAhora = DateTime.Now.ToString("HH:mm:ss");
+
+                    bool resultado = conexion.ejecutarComando($"UPDATE asistencia SET estado = '{comboBox1.Text}', hora = '{horaAhora}' WHERE no_control = '{txtNumControl.Text}' AND fecha = '{fechaHoy}'");
+
                     if (resultado == true)
                     {
                         MessageBox.Show("Asistencia ACTUALIZADA correctamente");
@@ -169,12 +267,37 @@ namespace PaseDeListaAlumnos
                     }
                     else
                     {
-                        MessageBox.Show("Error al actualizar la asistencia");
+                        MessageBox.Show("Error al actualizar la asistencia (Verifica que el alumno tenga una falta hoy)");
                     }
                 }
-                DataSet ds = conexion.ejecutar("Select * from asistencia");
+                DataSet ds = conexion.ejecutar("SELECT * FROM asistencia WHERE fecha = CURDATE()");
                 dgvListaAlumnos.DataSource = ds.Tables[0];
             }
+
+
+            //if (rbAsistencia.Checked)
+            //{
+            //    if (txtNumControl.Text == "")
+            //    {
+            //        MessageBox.Show("El campo de Núm. de control debe contener información", "Sistema", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //    }
+            //    else
+            //    {
+            //        bool resultado = conexion.ejecutarComando($"UPDATE asistencia SET estado = '{comboBox1.Text}' WHERE no_control = '{txtNumControl.Text}'");
+            //        if (resultado == true)
+            //        {
+            //            MessageBox.Show("Asistencia ACTUALIZADA correctamente");
+            //            txtNumControl.Clear();
+            //            comboBox1.SelectedIndex = -1;
+            //        }
+            //        else
+            //        {
+            //            MessageBox.Show("Error al actualizar la asistencia");
+            //        }
+            //    }
+            //    DataSet ds = conexion.ejecutar("Select * from asistencia");
+            //    dgvListaAlumnos.DataSource = ds.Tables[0];
+            //}
         }
 
         private void dtpFechaActual_ValueChanged(object sender, EventArgs e)
@@ -332,6 +455,9 @@ namespace PaseDeListaAlumnos
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+            GenerarFaltasDelDia();
+            rbAsistencia.Checked = true;
+
             rbAlumno.Checked = true;
             DataSet ds = conexion.ejecutar("SELECT * FROM alumnos");
             if (ds != null)
@@ -347,6 +473,35 @@ namespace PaseDeListaAlumnos
             if (e.KeyCode == Keys.Enter)
             {
                 button1_Click(this, new EventArgs());
+            }
+        }
+
+
+        // Método para generar las faltas del día automáticamente
+        private void GenerarFaltasDelDia()
+        {
+            DateTime ahora = DateTime.Now;
+            DataSet todosLosAlumnos = conexion.ejecutar("SELECT no_control FROM alumnos");
+
+            if (todosLosAlumnos != null)
+            {
+                foreach (DataRow fila in todosLosAlumnos.Tables[0].Rows)
+                {
+                    string nCon = fila["no_control"].ToString();
+
+                    DataSet existeHoy = conexion.ejecutar($"SELECT * FROM asistencia WHERE no_control = '{nCon}' AND fecha = '{ahora.ToString("yyyy-MM-dd")}'");
+
+                    if (existeHoy == null || existeHoy.Tables[0].Rows.Count == 0)
+                    {
+                        MySqlCommand cmdFalta = new MySqlCommand("INSERT INTO asistencia (no_control, fecha, hora, estado) VALUES (@no, @fec, @hor, @est)");
+                        cmdFalta.Parameters.AddWithValue("@no", nCon);
+                        cmdFalta.Parameters.AddWithValue("@fec", ahora.Date);
+                        cmdFalta.Parameters.AddWithValue("@hor", ahora.TimeOfDay);
+                        cmdFalta.Parameters.AddWithValue("@est", "Falta");
+
+                        conexion.ejecutarComando(cmdFalta);
+                    }
+                }
             }
         }
     }
