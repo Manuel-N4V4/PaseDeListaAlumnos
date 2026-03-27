@@ -1,0 +1,25 @@
+﻿version: '3.8'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql_pase_lista
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: pase_de_lista
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --bind-address=0.0.0.0
+    networks:
+      - mysql_network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  mysql_network:
+    driver: bridge

@@ -13,7 +13,7 @@ namespace PaseDeListaAlumnos
         {
             try
             {
-                string cadenaConexion = "server=localhost; database=pase_de_lista; user=root; password=1234;";
+                string cadenaConexion = "server=localhost;port=3306;database=pase_de_lista;user=root;password=1234;";
                 conexion = new MySqlConnection(cadenaConexion);
                 conexion.Open();
                 return conexion;

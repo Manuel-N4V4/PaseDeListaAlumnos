@@ -101,7 +101,7 @@ namespace PaseDeListaAlumnos
                     MessageBox.Show("Error al registrar la asistencia");
                 }
             }
-            DataSet ds = conexion.ejecutar("SELECT * FROM Asistencia");
+            DataSet ds = conexion.ejecutar("SELECT * FROM asistencia");
             dgvListaAlumnos.DataSource = ds.Tables[0];
 
         }
@@ -172,7 +172,7 @@ namespace PaseDeListaAlumnos
                         MessageBox.Show("Error al actualizar la asistencia");
                     }
                 }
-                DataSet ds = conexion.ejecutar("Select * from Asistencia");
+                DataSet ds = conexion.ejecutar("Select * from asistencia");
                 dgvListaAlumnos.DataSource = ds.Tables[0];
             }
         }
