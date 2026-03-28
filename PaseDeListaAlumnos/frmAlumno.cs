@@ -82,7 +82,6 @@ namespace PaseDeListaAlumnos
                 }
             }
         }
-        // Cancelamos el registro del alumno y cerramos el formulario
         private void btnCancelar_Click(object sender, EventArgs e)
         {
             this.Close();

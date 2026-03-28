@@ -3,10 +3,7 @@ using System.Data;
 
 namespace PaseDeListaAlumnos
 {
-    /*
-     PROYECTO CORREGIDO
-     N4V4
-     */
+    
     public partial class Form1 : Form
     {
         Conexion conexion = new Conexion();
@@ -31,7 +28,6 @@ namespace PaseDeListaAlumnos
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            // Utilizamos la función ejecutar() de la clase Conexion (SELECT) para obetener los datos de los alumnos que coincidan con el número de control ingresado en el TextBox, y luego asignamos el resultado al DataGridView
             DataSet ds = conexion.ejecutar($"SELECT * FROM alumnos WHERE nombre LIKE '{txtNumControl.Text}%'");
             if (ds != null)
             {
@@ -39,7 +35,6 @@ namespace PaseDeListaAlumnos
             }
         }
 
-        // Boton de registrar, al presionar el boton el maestro colocara el numero de control con la fecha y hora tomado y junto con su participacion en clase (Asistencia,Falta,Retardo o Justificacion)
         private void button1_Click(object sender, EventArgs e)
         {
             if (txtNumControl.Text == "")
@@ -50,22 +45,19 @@ namespace PaseDeListaAlumnos
             {
                 DateTime ahora = DateTime.Now;
 
-                // Buscamos si el alumno ya está en la lista de hoy usando tu objeto .Date
                 DataSet existe = conexion.ejecutar(
                     $"SELECT * FROM asistencia WHERE no_control = '{txtNumControl.Text}' AND fecha = '{ahora.Date.ToString("yyyy-MM-dd")}'"
                 );
 
-                // --- CASO 1: SI YA EXISTE EN LA LISTA, ACTUALIZAMOS ---
                 if (existe != null && existe.Tables[0].Rows.Count > 0)
                 {
-                    // Usamos MySqlCommand para el UPDATE y así usar .Date y .TimeOfDay sin textos raros
                     MySqlCommand cmdUpdate = new MySqlCommand(
                         "UPDATE asistencia SET estado = @estado, fecha = @fecha, hora = @hora WHERE no_control = @no_control AND fecha = @fecha_filtro"
                     );
 
                     cmdUpdate.Parameters.AddWithValue("@no_control", txtNumControl.Text);
-                    cmdUpdate.Parameters.AddWithValue("@fecha", ahora.Date); // Tu .Date exacto
-                    cmdUpdate.Parameters.AddWithValue("@hora", ahora.TimeOfDay); // Tu .TimeOfDay exacto
+                    cmdUpdate.Parameters.AddWithValue("@fecha", ahora.Date);
+                    cmdUpdate.Parameters.AddWithValue("@hora", ahora.TimeOfDay);
                     cmdUpdate.Parameters.AddWithValue("@fecha_filtro", ahora.Date);
 
                     if (comboBox1.Text == "")
@@ -86,33 +78,26 @@ namespace PaseDeListaAlumnos
                         comboBox1.SelectedIndex = -1;
                         txtNumControl.Focus();
                     }
-
-                    // Actualizamos la tabla visual y salimos para no hacer el insert
                     dgvListaAlumnos.DataSource = conexion.ejecutar("SELECT * FROM asistencia WHERE fecha = CURDATE()").Tables[0];
                     return;
                 }
 
-
-                // --- CASO 2: SI NO EXISTE EN LA LISTA, INSERTAMOS (Tu código original) ---
-                // Utilizamos MySqlCommand para mandar instruccion de insertado a la base de datos, en la funcion ejecutarComando() de la clase Conexion se asigna la conexion al comando y se ejecuta
                 MySqlCommand cmd = new MySqlCommand(
                     "INSERT INTO asistencia (no_control, fecha, hora, estado) VALUES (@no_control, @fecha, @hora, @estado)"
                 );
 
                 if (comboBox1.Text == "")
-                {
-                    // Comandos parametrizados para evitar inyeccion sql    
+                {   
                     cmd.Parameters.AddWithValue("@no_control", txtNumControl.Text);
-                    cmd.Parameters.AddWithValue("@fecha", ahora.Date); // Obtenemos la fecha con .Date para eliminar la parte de la hora
-                    cmd.Parameters.AddWithValue("@hora", ahora.TimeOfDay); // Obtenemos solo la parte de la hora con .TimeOfDay
+                    cmd.Parameters.AddWithValue("@fecha", ahora.Date);
+                    cmd.Parameters.AddWithValue("@hora", ahora.TimeOfDay);
                     cmd.Parameters.AddWithValue("@estado", "Asistencia");
                 }
                 else
-                {
-                    // Comandos parametrizados para evitar inyeccion sql    
+                { 
                     cmd.Parameters.AddWithValue("@no_control", txtNumControl.Text);
-                    cmd.Parameters.AddWithValue("@fecha", ahora.Date); // Obtenemos la fecha con .Date para eliminar la parte de la hora
-                    cmd.Parameters.AddWithValue("@hora", ahora.TimeOfDay); // Obtenemos solo la parte de la hora con .TimeOfDay
+                    cmd.Parameters.AddWithValue("@fecha", ahora.Date);
+                    cmd.Parameters.AddWithValue("@hora", ahora.TimeOfDay);
                     cmd.Parameters.AddWithValue("@estado", comboBox1.Text);
                 }
 
@@ -210,7 +195,6 @@ namespace PaseDeListaAlumnos
             alummno.ShowDialog();
         }
 
-        // Boton de Buscar, con este boton se buscara al alumno por su numero de control y se mostraran sus datos en el DataGridView, esto para verificar que el alumno existe y que se esta registrando la asistencia al alumno correcto
         private void button3_Click(object sender, EventArgs e)
         {
             if (txtNumControl.Text == "")
@@ -246,8 +230,6 @@ namespace PaseDeListaAlumnos
             }
         }
 
-        // Boton de Actualizar, con este boton se actualizara el apartado de asistencia del alumno seleccionado por su numero de control, se mandara una instruccion UPDATE a la base de datos con el valor seleccionado en el ComboBox
-        // Esto por si el alumno justifica su falta o retardo, o si se equivoco al registrar su asistencia el docente
         private void button2_Click(object sender, EventArgs e)
         {
             if (rbAsistencia.Checked)
@@ -392,7 +374,6 @@ namespace PaseDeListaAlumnos
         {
 
         }
-        // Codigo para seleccionar una fecha en el dataTimePicker y arroje la lista que fue tomada en esa fecha
         private void dateTimePicker2_ValueChanged(object sender, EventArgs e)
         {
             try
@@ -473,15 +454,12 @@ namespace PaseDeListaAlumnos
 
         private void txtNumControl_KeyDown(object sender, KeyEventArgs e)
         {
-            // Verificamos si la tecla presionada fue Enter
             if (e.KeyCode == Keys.Enter)
             {
                 button1_Click(this, new EventArgs());
             }
         }
 
-
-        // Método para generar las faltas del día automáticamente
         private void GenerarFaltasDelDia()
         {
             DateTime ahora = DateTime.Now;
